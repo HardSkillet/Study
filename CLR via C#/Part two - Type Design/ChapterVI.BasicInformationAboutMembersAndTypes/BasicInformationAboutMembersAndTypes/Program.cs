@@ -152,6 +152,5 @@ namespace BasicInformationAboutMembersAndTypes
              * 1-4 выполнять, 
              */
         }
-
     }
 }

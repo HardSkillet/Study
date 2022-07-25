@@ -226,8 +226,6 @@ namespace PrimitiveReferenceAndValueTypes
 
 
             //Примитивный тип данных dynamic
-
-
         }
     }
 }

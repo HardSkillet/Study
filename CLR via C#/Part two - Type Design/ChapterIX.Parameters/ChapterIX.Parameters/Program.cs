@@ -40,7 +40,31 @@ namespace ImplicityTypedLocalVariables {
             var name = "Jeff";
             name.ShowVariableType();
         }
-
-
+    }
+    /*
+     * При помощи ключевого слова var нельзя определит тип параметра метода, тип поля.
+     */
+}
+namespace PassingParametersToAMethodByReference {
+    //По умолчанию CLR предполагает, что все параметры методов передаются по значению
+    /*
+     * ключевые слова out и ref дают возможность передавать параметры по ссылке
+     * out - разрешает передавать не инициализированный параметр
+     * ref - параметр обязательно должен быть инициализирован
+     */
+    public sealed class Program {
+        public static void Main() {
+            Int32 x;
+            GetVal(x);                              //Инициализация х не обязательна
+            Console.WriteLine(x);                   //Выводится 10
+            AddVal(x);                              //Требуется инициализация
+            Console.WriteLine(x);                   //Выводится 30
+        }
+        private static void GetVal(out Int32 v) {
+            v = 10;
+        }
+        private static void AddVal(ref Int32 v) {
+            v += 20;
+        }
     }
 }
