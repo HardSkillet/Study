@@ -1,9 +1,8 @@
 ﻿using System;
+using System.IO;
 
 namespace OptionalAndNamedParameters            //Arguments*
 {
-
-
     public static class Program
     {
         private static Int32 s_n = 0;
@@ -52,13 +51,15 @@ namespace PassingParametersToAMethodByReference {
      * out - разрешает передавать не инициализированный параметр
      * ref - параметр обязательно должен быть инициализирован
      */
-    public sealed class Program {
+    public sealed class ProgramValue {
         public static void Main() {
             Int32 x;
-            GetVal(x);                              //Инициализация х не обязательна
-            Console.WriteLine(x);                   //Выводится 10
-            AddVal(x);                              //Требуется инициализация
-            Console.WriteLine(x);                   //Выводится 30
+            GetVal(out x);                              //Инициализация х не обязательна
+            Console.WriteLine(x);                       //Выводится 10
+            Int32 y = 10;
+            AddVal(ref y);                              //Требуется инициализация
+            Console.WriteLine(x);                       //Выводится 30
+            AddVal(y);
         }
         private static void GetVal(out Int32 v) {
             v = 10;
@@ -66,5 +67,56 @@ namespace PassingParametersToAMethodByReference {
         private static void AddVal(ref Int32 v) {
             v += 20;
         }
+        private static void AddVal(Int32 v) {
+            v += 10;
+        }
+        //Разрешается использовать перегрузку методов отличающихся только наличием ref/out. Т.к. ref и out компилируются в один IL-код, то нельзя перегружать метод отличающийся только ref или out
     }
+    public sealed class PorgramReference {
+        //Стоит использовать ключевые слова ref и out с ссылочными типами, только если внутри метода создаются новые объекты и необходимо вернтуть ссылку на них
+        public static void Main() {
+            FileStream fs;
+            StartProcessingFiles(out fs);
+            for (; fs != null; ContinueProcessingFiles(ref fs)) {
+                fs.Read("smth");
+            }
+        }
+        private static void StartProcessingFiles(out FileStream fs) {
+            fs = new FileStream("Something");
+        }
+        private static void ContinueProcessingFiles(ref FileStream fs) {
+            fs.Close();
+            if (noMoreFilesToProcess) fs = null;
+            else fs = new FileStream("Something");
+        }
+
+        //Код представленный ниже не будет работать для свопа двух строк без промежуточных переменных типа Object, т.к. переменные передаваемые в метод по ссылке должны быть одного типа(Object в данном случае)
+        public static void Swap(ref Object a, ref Object b)
+        {
+            Object t = b;
+            b = a;
+            a = t;
+        }
+    }
+}
+namespace PassingAVariableNumberOfParameters {
+    public sealed class SomeType {
+        public static Int32 Add(params Int32[] values) {
+            Int32 sum = 0;
+            if (values != null) {
+                for (Int32 i = 0; i < values.Length; i++) {
+                    sum += values[i];
+                }
+            }
+            return sum;
+        }
+        Int32 a = Add(1, 2, 3, 4, 5);                   //15
+        Int32 b = Add(new Int32[] { 1, 2, 3, 4, 5 });   //15
+        //Таким образом, мы можем понять, что сначала выделяется место и создаётся массив параметров, а затем происходит выполнение метода
+        //Ключевым словом param может быть помечен только последний параметр метода и должен указывать на одномерный массив произвольного типа
+    }
+}
+namespace TypesOfParametersAndReturnValues {
+    //Для типа параметра метода рекомендуется выбирать более слабый тип, чтобы была возможность работать с большим числом типов. Например IEnumerable<T>, вместо ICollection<T>, IList<T>
+    //Для типа возвращаемого методом объекта лучше выбирать более сильный тип
 }
