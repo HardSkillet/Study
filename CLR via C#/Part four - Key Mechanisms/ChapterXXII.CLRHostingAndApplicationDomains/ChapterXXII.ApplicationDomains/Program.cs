@@ -12,6 +12,7 @@ using System.Runtime.Remoting;
 namespace ChapterXXII.ApplicationDomains
 {
     [System.Runtime.InteropServices.ComVisible(true)]
+
     public sealed class SomeClass
     {
         private static void Marshalling()
@@ -20,7 +21,8 @@ namespace ChapterXXII.ApplicationDomains
             AppDomain adCallingThreadDomain = Thread.GetDomain();
 
             //Каждому домену присваивается значимое имя, облегчающее отладку
-            //Получаем имя домена и выволим его
+            //Получаем имя домена и выводим его
+
 
             String callingDomainName = adCallingThreadDomain.FriendlyName;
             Console.WriteLine("Default AppDomain's friendly name={0}", callingDomainName);
@@ -42,7 +44,7 @@ namespace ChapterXXII.ApplicationDomains
             //Загружаем нашу сборку в новый домен, конструируем объект и продивгаем его обратно в наш домен
             //в дейстивтельности мы получаем ссылку на представитель
             mbrt = (MarshalByRefType)
-                ad2.CreateInstanceAndUnwrap(exeAssembly, "MarshalByRefType");
+                ad2.CreateInstanceAndUnwrap(exeAssembly, typeof(MarshalByRefType).FullName);
 
             Console.WriteLine("Type={0}", mbrt.GetType());      //CLR неверно определяет тип
 
@@ -77,7 +79,7 @@ namespace ChapterXXII.ApplicationDomains
 
             //Загружаем нашу сборку в новый домен, конструируем объект и продвигаем его обратно в наш домен
             //в дейстивтельности мы получаем ссылку на представитель
-            mbrt = (MarshalByRefType)ad2.CreateInstanceAndUnwrap(exeAssembly, "MarshalByRefType");
+            mbrt = (MarshalByRefType)ad2.CreateInstanceAndUnwrap(exeAssembly, typeof(MarshalByRefType).FullName);
 
             //Метод возвращает копию возвращенного объекта
             //Продвижения объекта происходит по значению, а не по ссылке
@@ -107,15 +109,16 @@ namespace ChapterXXII.ApplicationDomains
 
 
             //Пример 3. Доступ к объектам другого домена без использования механизма продвижения
+            Console.WriteLine("{0}Demo#3", Environment.NewLine);
+
             ad2 = AppDomain.CreateDomain("AD #2", null, null);
 
             //Загружаем нашу сборку в новый домен, конструируем объект и продвигаем его обратно в наш домен
             //в дейстивтельности мы получаем ссылку на представитель
-            mbrt = (MarshalByRefType)ad2.CreateInstanceAndUnwrap(exeAssembly, "MarshalByRefType");
+            mbrt = (MarshalByRefType)ad2.CreateInstanceAndUnwrap(exeAssembly, typeof(MarshalByRefType).FullName);
 
             //Метод возвращает объект, продвижение которого невозможно
             //Генерируется исключение
-
             NonMarshalableType nmt = mbrt.MethodArgAndReturn(callingDomainName);
         }
         [Serializable]
@@ -169,9 +172,20 @@ namespace ChapterXXII.ApplicationDomains
             public NonMarshalableType()
             {
                 Console.WriteLine("Executing in " + Thread.GetDomain().FriendlyName);
-
             }
         }
+        /*
+         * Выгрузка домена методом Upload:
+         * 1. Приостанавливает все потоки в процессе, которые когда-либо выполняли управляемый код
+         * 2. Генерирует исключение ThreadAbortException, если существуют потоки, выполняющие код в этом домене. Эти потоки переходят к выполнению блоков finally. 
+         Если исключение не отловлено, потоки завершают работу, но не процесс!!!
+         * 3. СLR выставляет флаги на каждый объект-представителя, который ссылается на объект в выгружаемом домене
+         * 4. Генерация принудительной уборки мусора
+         * 5. Продолжение работы потоков
+         */
+
+        //В С# имеются свойства мониторинга доменов
+
         public sealed class Program {
             public static void Main() {
                 Marshalling();
