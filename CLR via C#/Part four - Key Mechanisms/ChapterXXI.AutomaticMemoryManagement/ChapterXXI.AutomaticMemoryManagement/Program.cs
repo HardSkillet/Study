@@ -64,7 +64,7 @@ using System.Threading;
  * Инструкция using(T t = new T(...)) {...} может быть применима только к объекту, наследующему интерфейс IDisposable, и после выполнения кода внутри {} применяет метод Dispose к переменной t
  */
 
-namespace ChapterXX.AutomaticMemoryManagement
+namespace ChapterXXI.AutomaticMemoryManagement
 {
     class Program
     {
